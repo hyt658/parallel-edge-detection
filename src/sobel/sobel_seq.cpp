@@ -1,17 +1,38 @@
 #include "sobel.h"
 
 void sobelSequential(GrayImage* image) {
-    uint8_t** output = new uint8_t*[getOutputHeight(image->height)];
-    sobel({image->image, output, image->height, image->width});
+    int height = image->height;
+    int width = image->width;
+    int new_height = getOutputHeight(height);
+    int new_width = getOutputWidth(width);
+    uint8_t** new_image = new uint8_t*[new_height];
+    
+    for (int y = 0; y < new_height; ++y) {
+        new_image[y] = new uint8_t[new_width];
+        for (int x = 0; x < new_width; ++x) {
+            int sum_x = 0;
+            int sum_y = 0;
+
+            for (int i = 0; i < 3; ++i) {
+                for (int j = 0; j < 3; ++j) {
+                    sum_x += kernel_x[i][j] * image->image[y+i][x+j];
+                    sum_y += kernel_y[i][j] * image->image[y+i][x+j];
+                }
+            }
+
+            uint8_t magnitude = std::sqrt(sum_x * sum_x + sum_y * sum_y);
+            new_image[y][x] = magnitude;
+        }
+    }
 
     for (int i = 0; i < image->height; ++i) {
         delete[] image->image[i];
     }
     delete[] image->image;
 
-    image->image = output;
-    image->height = getOutputHeight(image->height);
-    image->width = getOutputWidth(image->width);
+    image->image = new_image;
+    image->height = new_height;
+    image->width = new_width;
 }
 
 int main() {
