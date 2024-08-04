@@ -22,4 +22,4 @@ cmake ..
 make
 ```
 
-Then the executabel file `main` is in current directory.
+Each parallel technique will have a separate executable file. `main` will execute all of them and record the running time. All of them will be in the `build/` directory.

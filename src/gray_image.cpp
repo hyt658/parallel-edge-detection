@@ -68,8 +68,8 @@ GrayImage::~GrayImage() {
     delete[] image;
 }
 
-void GrayImage::saveImage(std::string output_dir) {
-    std::string output_path = output_dir + "/result_" + file_name;
+void GrayImage::saveImage(std::string output_dir, std::string prefix) {
+    std::string output_path = output_dir + "/" + prefix + file_name;
 
     FILE* image_fp = fopen(output_path.c_str(), "wb");
     if (!image_fp) {
@@ -105,4 +105,31 @@ void GrayImage::saveImage(std::string output_dir) {
     png_write_end(png, info);
     png_destroy_write_struct(&png, &info);
     fclose(image_fp);
+}
+
+std::vector<GrayImage*> getInputImages(const std::string& directory, bool print) {
+    std::vector<GrayImage*> images;
+
+    try {
+        for (auto& entry : fs::directory_iterator(directory)) {
+            if (entry.is_regular_file()) {
+                std::string file_name = entry.path().filename().string();
+                GrayImage* new_image = new GrayImage(directory, file_name);
+                if (print) {
+                    std::cout << "Loaded image [" << file_name << "] successfully, dimension: "
+                        << new_image->width << "x" << new_image->height << std::endl;
+                }
+                images.emplace_back(new_image);
+            }
+        }
+    } catch (fs::filesystem_error& e) {
+        std::cerr << "Error accessing directory [" << directory << "]: "
+            << e.what() << std::endl;
+        for (auto& image : images) {
+            delete image;
+        }
+        images.clear();
+    }
+
+    return images;
 }
