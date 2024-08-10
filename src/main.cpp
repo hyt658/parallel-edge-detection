@@ -1,6 +1,5 @@
 #include <cstdlib>
 #include <iostream>
-#include <chrono>
 
 void executeCMD(const char* cmd) {
     int result = system(cmd);
@@ -12,5 +11,5 @@ void executeCMD(const char* cmd) {
 
 int main() {
     executeCMD("./sobel_seq");
-    executeCMD("mpirun -np 8 ./sobel_mpi");
+    executeCMD("mpirun -np 6 ./sobel_mpi");
 }

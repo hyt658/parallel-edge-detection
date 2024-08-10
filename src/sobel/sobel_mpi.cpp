@@ -1,7 +1,10 @@
 #include <cstring>
 #include <omp.h>
 #include <mpi.h>
+#include <chrono>
 #include "sobel.h"
+
+namespace chrono = std::chrono;
 
 #define RANK0_MESSAGE(message) do { \
     if (rank == 0) { \
@@ -67,7 +70,6 @@ void sobelMPI(GrayImage* image, int rank, int size) {
 
     MPI_Gatherv(local_new_image, (local_height * new_width), MPI_UINT8_T,
         linear_new_image, recv_counts, displs, MPI_UINT8_T, 0, MPI_COMM_WORLD);
-    MPI_Barrier(MPI_COMM_WORLD);
 
     uint8_t** new_image = new uint8_t*[new_height];
     if (rank == 0) {
@@ -101,22 +103,37 @@ int main(int argc, char** argv) {
 
     RANK0_MESSAGE("==========MPI Sobel==========");
 
-    std::vector<GrayImage*> images = getInputImages("../inputs", (rank == 0));
+    std::string image_math = "../inputs_BSDS500/BSDS500/data/images/";
+    auto test = getInputImages(image_math + "test", (rank == 0));
+    auto train = getInputImages(image_math + "train", (rank == 0));
+    auto val = getInputImages(image_math + "val", (rank == 0));
 
+    std::vector<GrayImage*> images;
+    images.insert(images.end(), test.begin(), test.end());
+    images.insert(images.end(), train.begin(), train.end());
+    images.insert(images.end(), val.begin(), val.end());
+
+    auto start = chrono::high_resolution_clock::now();
     for (auto& image : images) {
-        std::string message = "Processing image [" + image->file_name + "]...";
+        std::string message = "Processing image [" + image->file_name + ".png]...";
         RANK0_MESSAGE(message);
         sobelMPI(image, rank, size);
 
         if (rank == 0) {
-            image->saveImage("../sobel_outputs", "mpi_");
-            message = "Saved image [mpi_" + image->file_name + "] successfully";
+            image->saveImage("../sobel_outputs/mpi");
+            message = "Saved image [" + image->file_name + "_output.png] successfully";
             RANK0_MESSAGE(message);
         }
         delete image;
     }
-
     MPI_Barrier(MPI_COMM_WORLD);
+
+    if (rank == 0) {
+        auto end = chrono::high_resolution_clock::now();
+        auto duration = chrono::duration_cast<chrono::nanoseconds>(end - start);
+        std::cout << "Duration: " << duration.count() << " ns" << std::endl;
+    }
+
     MPI_Finalize();
     return 0;
 }

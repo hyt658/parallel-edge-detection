@@ -15,7 +15,7 @@ struct GrayImage {
     GrayImage(std::string input_dir, std::string file_name);
     ~GrayImage();
 
-    void saveImage(std::string output_dir, std::string prefix);
+    void saveImage(std::string output_dir);
 };
 
 // require user to free memory

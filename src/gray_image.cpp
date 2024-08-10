@@ -3,8 +3,9 @@
 #include "png.h"
 
 GrayImage::GrayImage(std::string input_dir, std::string file_name):
-    image(NULL), width(0), height(0), file_name(file_name)
+    image(NULL), width(0), height(0)
 {
+    this->file_name = file_name.substr(0, file_name.find_last_of('.'));
     std::string input_path = input_dir + "/" + file_name;
 
     FILE* image_fp = fopen(input_path.c_str(), "rb");
@@ -68,8 +69,8 @@ GrayImage::~GrayImage() {
     delete[] image;
 }
 
-void GrayImage::saveImage(std::string output_dir, std::string prefix) {
-    std::string output_path = output_dir + "/" + prefix + file_name;
+void GrayImage::saveImage(std::string output_dir) {
+    std::string output_path = output_dir + "/" + file_name + "_output.png";
 
     FILE* image_fp = fopen(output_path.c_str(), "wb");
     if (!image_fp) {
@@ -109,26 +110,26 @@ void GrayImage::saveImage(std::string output_dir, std::string prefix) {
 
 std::vector<GrayImage*> getInputImages(const std::string& directory, bool print) {
     std::vector<GrayImage*> images;
+    if (!fs::exists(directory) || !fs::is_directory(directory)) {
+        std::cerr << "Directory [" << directory << "] does not exist" << std::endl;
+        return images;
+    }
 
-    try {
-        for (auto& entry : fs::directory_iterator(directory)) {
-            if (entry.is_regular_file()) {
-                std::string file_name = entry.path().filename().string();
+    for (auto& entry : fs::directory_iterator(directory)) {
+        if (entry.is_regular_file()) {
+            std::string file_name = entry.path().filename().string();
+            try {
                 GrayImage* new_image = new GrayImage(directory, file_name);
                 if (print) {
                     std::cout << "Loaded image [" << file_name << "] successfully, dimension: "
                         << new_image->width << "x" << new_image->height << std::endl;
                 }
                 images.emplace_back(new_image);
+            } catch (std::runtime_error& e) {
+                std::cerr << e.what() << std::endl;
+                std::cerr << "Failed to load image [" << file_name << "], skip" << std::endl;
             }
         }
-    } catch (fs::filesystem_error& e) {
-        std::cerr << "Error accessing directory [" << directory << "]: "
-            << e.what() << std::endl;
-        for (auto& image : images) {
-            delete image;
-        }
-        images.clear();
     }
 
     return images;

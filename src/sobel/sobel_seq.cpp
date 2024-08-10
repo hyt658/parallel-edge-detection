@@ -1,4 +1,7 @@
+#include <chrono>
 #include "sobel.h"
+
+namespace chrono = std::chrono;
 
 void sobelSequential(GrayImage* image) {
     int height = image->height;
@@ -40,17 +43,31 @@ void sobelSequential(GrayImage* image) {
 
 int main() {
     std::cout << "==========Sequential Sobel==========" << std::endl;
-    std::vector<GrayImage*> images = getInputImages("../inputs");
 
+    std::string image_math = "../inputs_BSDS500/BSDS500/data/images/";
+    auto test = getInputImages(image_math + "test");
+    auto train = getInputImages(image_math + "train");
+    auto val = getInputImages(image_math + "val");
+
+    std::vector<GrayImage*> images;
+    images.insert(images.end(), test.begin(), test.end());
+    images.insert(images.end(), train.begin(), train.end());
+    images.insert(images.end(), val.begin(), val.end());
+
+    auto start = chrono::high_resolution_clock::now();
     for (auto& image : images) {
         std::cout << "Processing image [" << image->file_name << "]..." << std::endl;
         sobelSequential(image);
 
-        image->saveImage("../sobel_outputs", "seq_");
-        std::cout << "Saved image [seq_"
-            << image->file_name << "] successfully" << std::endl;
+        image->saveImage("../sobel_outputs/sequential");
+        std::cout << "Saved image [" 
+            << image->file_name <<"_output.png] successfully" << std::endl;
         delete image;
     }
+    auto end = chrono::high_resolution_clock::now();
+
+    auto duration = chrono::duration_cast<chrono::nanoseconds>(end - start);
+    std::cout << "Duration: " << duration.count() << " ns" << std::endl;
 
     return 0;
 }
