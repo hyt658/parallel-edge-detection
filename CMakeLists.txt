@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(EdgeDetection VERSION 1.0)
 
-find_package(PNG REQUIRED)
 find_package(MPI REQUIRED)
 find_package(OpenCV REQUIRED)
 
@@ -26,10 +25,14 @@ target_link_libraries(main
 )
 
 target_link_libraries(sobel_seq
-    PRIVATE PNG::PNG
+    PRIVATE opencv_core
+    PRIVATE opencv_highgui
+    PRIVATE opencv_imgproc
 )
 
 target_link_libraries(sobel_mpi 
-    PRIVATE PNG::PNG
+    PRIVATE opencv_core
+    PRIVATE opencv_highgui
+    PRIVATE opencv_imgproc
     PRIVATE MPI::MPI_CXX
 )

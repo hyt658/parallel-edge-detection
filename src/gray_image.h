@@ -3,7 +3,6 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <filesystem>
 
 namespace fs = std::filesystem;
 
@@ -19,7 +18,6 @@ struct GrayImage {
 };
 
 // require user to free memory
-std::vector<GrayImage*> getInputImages(
-    const std::string& directory, bool print = true);
+std::vector<GrayImage*> getInputImages(const std::string& directory, bool verbose);
 
 #endif

@@ -41,27 +41,43 @@ void sobelSequential(GrayImage* image) {
     image->width = new_width;
 }
 
-int main() {
+int main(int argc, char** argv) {
+    bool verbose = false;
+    if (argc > 1) {
+        auto arg1 = std::string(argv[1]);
+        if (arg1 == "-v" || arg1 == "--verbose") {
+            verbose = true;
+        }
+    }
+    
     std::cout << "==========Sequential Sobel==========" << std::endl;
+    std::cout << "Loading images..." << std::endl;
 
     std::string image_math = "../inputs_BSDS500/BSDS500/data/images/";
-    auto test = getInputImages(image_math + "test");
-    auto train = getInputImages(image_math + "train");
-    auto val = getInputImages(image_math + "val");
+    auto test = getInputImages(image_math + "test", verbose);
+    auto train = getInputImages(image_math + "train", verbose);
+    auto val = getInputImages(image_math + "val", verbose);
 
     std::vector<GrayImage*> images;
     images.insert(images.end(), test.begin(), test.end());
     images.insert(images.end(), train.begin(), train.end());
     images.insert(images.end(), val.begin(), val.end());
 
+    std::cout << "Start processing images..." << std::endl;
+
     auto start = chrono::high_resolution_clock::now();
     for (auto& image : images) {
-        std::cout << "Processing image [" << image->file_name << "]..." << std::endl;
+        if (verbose) {
+            std::cout << "Processing image ["
+                << image->file_name << "]..." << std::endl;
+        }
         sobelSequential(image);
 
         image->saveImage("../sobel_outputs/sequential");
-        std::cout << "Saved image [" 
-            << image->file_name <<"_output.png] successfully" << std::endl;
+        if (verbose) {
+            std::cout << "Saved output of image [" 
+                << image->file_name << "] successfully" << std::endl;
+        }
         delete image;
     }
     auto end = chrono::high_resolution_clock::now();

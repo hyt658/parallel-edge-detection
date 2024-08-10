@@ -6,12 +6,6 @@
 
 namespace chrono = std::chrono;
 
-#define RANK0_MESSAGE(message) do { \
-    if (rank == 0) { \
-        std::cout << message << std::endl; \
-    } \
-} while (0)
-
 void sobelMPI(GrayImage* image, int rank, int size) {
     int height = image->height;
     int width = image->width;
@@ -101,28 +95,46 @@ int main(int argc, char** argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    RANK0_MESSAGE("==========MPI Sobel==========");
+    bool verbose = false;
+    if (argc > 1) {
+        auto arg1 = std::string(argv[1]);
+        if (arg1 == "-v" || arg1 == "--verbose") {
+            verbose = true;
+        }
+    }
+
+    if (rank == 0) {
+        std::cout << "==========MPI Sobel==========" << std::endl;
+        std::cout << "Loading images..." << std::endl;
+    }
 
     std::string image_math = "../inputs_BSDS500/BSDS500/data/images/";
-    auto test = getInputImages(image_math + "test", (rank == 0));
-    auto train = getInputImages(image_math + "train", (rank == 0));
-    auto val = getInputImages(image_math + "val", (rank == 0));
+    auto test = getInputImages(image_math + "test", ((rank == 0) && verbose));
+    auto train = getInputImages(image_math + "train", ((rank == 0) && verbose));
+    auto val = getInputImages(image_math + "val", ((rank == 0) && verbose));
 
     std::vector<GrayImage*> images;
     images.insert(images.end(), test.begin(), test.end());
     images.insert(images.end(), train.begin(), train.end());
     images.insert(images.end(), val.begin(), val.end());
 
+    if (rank == 0) {
+        std::cout << "Start processing images..." << std::endl;
+    }
+
     auto start = chrono::high_resolution_clock::now();
     for (auto& image : images) {
-        std::string message = "Processing image [" + image->file_name + ".png]...";
-        RANK0_MESSAGE(message);
+        std::string message = "Processing image [" + image->file_name + "]...";
+        if (verbose && rank == 0) {
+            std::cout << "Processing image ["
+                << image->file_name << "]..." << std::endl;
+        }
         sobelMPI(image, rank, size);
 
-        if (rank == 0) {
+        if (verbose && rank == 0) {
             image->saveImage("../sobel_outputs/mpi");
-            message = "Saved image [" + image->file_name + "_output.png] successfully";
-            RANK0_MESSAGE(message);
+            std::cout << "Saved output of image [" 
+                << image->file_name << "] successfully" << std::endl;
         }
         delete image;
     }

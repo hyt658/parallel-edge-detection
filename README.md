@@ -8,10 +8,10 @@ Using OpenMP, MPI, and CUDA to implement edge detection in C++. Analyze their re
 
 ### Library Requirements
 
-1. libpng
-2. libomp
-3. open-mpi
-4. CUDA Toolkit
+1. libomp
+2. open-mpi
+3. CUDA Toolkit
+4. OpenCV
 
 ### Build Step
 
