@@ -1,5 +1,4 @@
 #include <cstring>
-#include <omp.h>
 #include <mpi.h>
 #include <chrono>
 #include "sobel.h"
@@ -108,10 +107,10 @@ int main(int argc, char** argv) {
         std::cout << "Loading images..." << std::endl;
     }
 
-    std::string image_math = "../inputs_BSDS500/BSDS500/data/images/";
-    auto test = getInputImages(image_math + "test", ((rank == 0) && verbose));
-    auto train = getInputImages(image_math + "train", ((rank == 0) && verbose));
-    auto val = getInputImages(image_math + "val", ((rank == 0) && verbose));
+    std::string image_path = "../inputs_BSDS500/BSDS500/data/images/";
+    auto test = getInputImages(image_path + "test", ((rank == 0) && verbose));
+    auto train = getInputImages(image_path + "train", ((rank == 0) && verbose));
+    auto val = getInputImages(image_path + "val", ((rank == 0) && verbose));
 
     std::vector<GrayImage*> images;
     images.insert(images.end(), test.begin(), test.end());

@@ -53,10 +53,10 @@ int main(int argc, char** argv) {
     std::cout << "==========Sequential Sobel==========" << std::endl;
     std::cout << "Loading images..." << std::endl;
 
-    std::string image_math = "../inputs_BSDS500/BSDS500/data/images/";
-    auto test = getInputImages(image_math + "test", verbose);
-    auto train = getInputImages(image_math + "train", verbose);
-    auto val = getInputImages(image_math + "val", verbose);
+    std::string image_path = "../inputs_BSDS500/BSDS500/data/images/";
+    auto test = getInputImages(image_path + "test", verbose);
+    auto train = getInputImages(image_path + "train", verbose);
+    auto val = getInputImages(image_path + "val", verbose);
 
     std::vector<GrayImage*> images;
     images.insert(images.end(), test.begin(), test.end());

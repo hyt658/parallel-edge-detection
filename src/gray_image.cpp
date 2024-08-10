@@ -1,4 +1,3 @@
-// based on http://www.libpng.org/pub/png/libpng-1.2.5-manual.html
 #include <filesystem>
 #include <opencv2/opencv.hpp>
 #include "gray_image.h"
