@@ -33,8 +33,12 @@ void sobelMPI(GrayImage* image, int rank, int size) {
                 }
             }
 
-            uint8_t magnitude = std::sqrt(sum_x * sum_x + sum_y * sum_y);
-            local_new_image[(y - start_y) * new_width + x] = magnitude;
+            sum_x = std::abs(sum_x);
+            sum_y = std::abs(sum_y);
+
+            int fill_idx = (y - start_y) * new_width + x;
+            int magnitude = std::sqrt(sum_x * sum_x + sum_y * sum_y);
+            local_new_image[fill_idx] = (uint8_t)std::min(255, magnitude);
         }
     }
 

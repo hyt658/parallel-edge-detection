@@ -20,8 +20,11 @@ void sobelSequential(GrayImage* image) {
                 }
             }
 
-            uint8_t magnitude = std::sqrt(sum_x * sum_x + sum_y * sum_y);
-            new_image[y][x] = magnitude;
+            sum_x = std::abs(sum_x);
+            sum_y = std::abs(sum_y);
+
+            int magnitude = std::sqrt(sum_x * sum_x + sum_y * sum_y);
+            new_image[y][x] = (uint8_t)std::min(255, magnitude);
         }
     }
 
