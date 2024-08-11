@@ -88,3 +88,17 @@ std::vector<GrayImage*> getInputImages(const std::string& directory, bool verbos
 
     return images;
 }
+
+std::vector<GrayImage*> getBSDS500Images(bool verbose) {
+    std::string image_path = "../inputs_BSDS500/BSDS500/data/images/";
+    auto test = getInputImages(image_path + "test", verbose);
+    auto train = getInputImages(image_path + "train", verbose);
+    auto val = getInputImages(image_path + "val", verbose);
+
+    std::vector<GrayImage*> images;
+    images.insert(images.end(), test.begin(), test.end());
+    images.insert(images.end(), train.begin(), train.end());
+    images.insert(images.end(), val.begin(), val.end());
+
+    return images;
+}

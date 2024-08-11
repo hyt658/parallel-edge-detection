@@ -1,7 +1,10 @@
 #ifndef SOBEL_H
 #define SOBEL_H
 #include <cmath>
+#include <chrono>
 #include "../gray_image.h"
+
+namespace chrono = std::chrono;
 
 const int kernel_x[3][3] = {
     {-1, 0, 1},

@@ -1,9 +1,6 @@
 #include <cstring>
 #include <mpi.h>
-#include <chrono>
 #include "sobel.h"
-
-namespace chrono = std::chrono;
 
 void sobelMPI(GrayImage* image, int rank, int size) {
     int height = image->height;
@@ -108,15 +105,7 @@ int main(int argc, char** argv) {
         std::cout << "Loading images..." << std::endl;
     }
 
-    std::string image_path = "../inputs_BSDS500/BSDS500/data/images/";
-    auto test = getInputImages(image_path + "test", ((rank == 0) && verbose));
-    auto train = getInputImages(image_path + "train", ((rank == 0) && verbose));
-    auto val = getInputImages(image_path + "val", ((rank == 0) && verbose));
-
-    std::vector<GrayImage*> images;
-    images.insert(images.end(), test.begin(), test.end());
-    images.insert(images.end(), train.begin(), train.end());
-    images.insert(images.end(), val.begin(), val.end());
+    std::vector<GrayImage*> images = getBSDS500Images(verbose);
 
     if (rank == 0) {
         std::cout << "Start processing images..." << std::endl;

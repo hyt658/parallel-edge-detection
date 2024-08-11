@@ -1,7 +1,4 @@
-#include <chrono>
 #include "sobel.h"
-
-namespace chrono = std::chrono;
 
 void sobelSequential(GrayImage* image) {
     int height = image->height;
@@ -52,19 +49,9 @@ int main(int argc, char** argv) {
     
     std::cout << "==========Sequential Sobel==========" << std::endl;
     std::cout << "Loading images..." << std::endl;
-
-    std::string image_path = "../inputs_BSDS500/BSDS500/data/images/";
-    auto test = getInputImages(image_path + "test", verbose);
-    auto train = getInputImages(image_path + "train", verbose);
-    auto val = getInputImages(image_path + "val", verbose);
-
-    std::vector<GrayImage*> images;
-    images.insert(images.end(), test.begin(), test.end());
-    images.insert(images.end(), train.begin(), train.end());
-    images.insert(images.end(), val.begin(), val.end());
+    std::vector<GrayImage*> images = getBSDS500Images(verbose);
 
     std::cout << "Start processing images..." << std::endl;
-
     auto start = chrono::high_resolution_clock::now();
     for (auto& image : images) {
         if (verbose) {
