@@ -18,6 +18,11 @@ add_executable(sobel_mpi
     src/sobel/sobel_mpi.cpp
 )
 
+add_executable(canny_seq
+    src/gray_image.cpp
+    src/canny/canny_seq.cpp
+)
+
 target_link_libraries(main
     PRIVATE opencv_core
     PRIVATE opencv_highgui
@@ -35,4 +40,10 @@ target_link_libraries(sobel_mpi
     PRIVATE opencv_highgui
     PRIVATE opencv_imgproc
     PRIVATE MPI::MPI_CXX
+)
+
+target_link_libraries(canny_seq
+    PRIVATE opencv_core
+    PRIVATE opencv_highgui
+    PRIVATE opencv_imgproc
 )
