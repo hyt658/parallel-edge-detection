@@ -15,12 +15,12 @@ void sobelMPI(GrayImage* image, int rank, int size) {
     int start_y = rank * rows_per_process;
     int end_y = (rank == size - 1) ? new_height : start_y + rows_per_process;
     int local_height = end_y - start_y;
-    uint8_t* local_new_image = new uint8_t[local_height * new_width];
+    float* local_new_image = new float[local_height * new_width];
 
     for (int y = start_y; y < end_y; ++y) {
         for (int x = 0; x < new_width; ++x) {
-            int sum_x = 0;
-            int sum_y = 0;
+            float sum_x = 0;
+            float sum_y = 0;
 
             for (int i = 0; i < 3; ++i) {
                 for (int j = 0; j < 3; ++j) {
@@ -33,14 +33,14 @@ void sobelMPI(GrayImage* image, int rank, int size) {
             sum_y = std::abs(sum_y);
 
             int fill_idx = (y - start_y) * new_width + x;
-            int magnitude = std::sqrt(sum_x * sum_x + sum_y * sum_y);
-            local_new_image[fill_idx] = (uint8_t)std::min(255, magnitude);
+            float magnitude = std::sqrt(sum_x * sum_x + sum_y * sum_y);
+            local_new_image[fill_idx] = std::min(255.0f, magnitude);
         }
     }
 
-    uint8_t* linear_new_image = nullptr;
+    float* linear_new_image = nullptr;
     if (rank == 0) {
-        linear_new_image = new uint8_t[new_height * new_width];
+        linear_new_image = new float[new_height * new_width];
     }
 
     int recv_counts[size];
@@ -61,14 +61,15 @@ void sobelMPI(GrayImage* image, int rank, int size) {
         }
     }
 
-    MPI_Gatherv(local_new_image, (local_height * new_width), MPI_UINT8_T,
-        linear_new_image, recv_counts, displs, MPI_UINT8_T, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(local_new_image, (local_height * new_width), MPI_FLOAT,
+        linear_new_image, recv_counts, displs, MPI_FLOAT, 0, MPI_COMM_WORLD);
 
-    uint8_t** new_image = new uint8_t*[new_height];
+    float** new_image = new float*[new_height];
     if (rank == 0) {
         for (int y = 0; y < new_height; ++y) {
-            new_image[y] = new uint8_t[new_width];
-            std::memcpy(new_image[y], &linear_new_image[y * new_width], new_width * sizeof(uint8_t));
+            new_image[y] = new float[new_width];
+            std::memcpy(new_image[y], 
+                &linear_new_image[y * new_width], new_width * sizeof(float));
         }
     }
 
@@ -121,6 +122,7 @@ int main(int argc, char** argv) {
         std::cout << "Start processing images..." << std::endl;
     }
 
+    MPI_Barrier(MPI_COMM_WORLD);
     auto start = chrono::high_resolution_clock::now();
     for (auto& image : images) {
         std::string message = "Processing image [" + image->file_name + "]...";
@@ -130,10 +132,12 @@ int main(int argc, char** argv) {
         }
         sobelMPI(image, rank, size);
 
-        if (verbose && rank == 0) {
+        if (rank == 0) {
             image->saveImage("../sobel_outputs/mpi");
-            std::cout << "Saved output of image [" 
-                << image->file_name << "] successfully" << std::endl;
+            if (verbose) {
+                std::cout << "Saved output of image [" 
+                    << image->file_name << "] successfully" << std::endl;
+            }
         }
         delete image;
     }

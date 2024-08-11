@@ -2,6 +2,8 @@
 #include <opencv2/opencv.hpp>
 #include "gray_image.h"
 
+namespace fs = std::filesystem;
+
 GrayImage::GrayImage(std::string input_dir, std::string file_name):
     image(nullptr), width(0), height(0), file_name(file_name)
 {
@@ -16,11 +18,11 @@ GrayImage::GrayImage(std::string input_dir, std::string file_name):
 
     width = gray_image.cols;
     height = gray_image.rows;
-    image = new uint8_t*[height];
+    image = new float*[height];
     for (int y = 0; y < height; ++y) {
-        image[y] = new uint8_t[width];
+        image[y] = new float[width];
         for (int x = 0; x < width; ++x) {
-            image[y][x] = gray_image.at<uint8_t>(y, x);
+            image[y][x] = (float)gray_image.at<uint8_t>(y, x);
         }
     }
 }
@@ -39,10 +41,14 @@ void GrayImage::saveImage(std::string output_dir) {
     auto suffix = file_name.substr(file_name.find_last_of("."));
     auto output_path = output_dir + "/" + prefix + "_output" + suffix;
 
+    if (!fs::exists(output_dir)) {
+        fs::create_directories(output_dir);
+    }
+
     cv::Mat gray_image(height, width, CV_8UC1);
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-            gray_image.at<uint8_t>(y, x) = image[y][x];
+            gray_image.at<uint8_t>(y, x) = (uint8_t)image[y][x];
         }
     }
 

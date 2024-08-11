@@ -4,10 +4,8 @@
 #include <vector>
 #include <string>
 
-namespace fs = std::filesystem;
-
 struct GrayImage {
-    uint8_t** image;
+    float** image;
     int width, height;
     std::string file_name;
 

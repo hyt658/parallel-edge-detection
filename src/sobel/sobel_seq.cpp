@@ -8,13 +8,13 @@ void sobelSequential(GrayImage* image) {
     int width = image->width;
     int new_height = getOutputHeight(height);
     int new_width = getOutputWidth(width);
-    uint8_t** new_image = new uint8_t*[new_height];
+    float** new_image = new float*[new_height];
     
     for (int y = 0; y < new_height; ++y) {
-        new_image[y] = new uint8_t[new_width];
+        new_image[y] = new float[new_width];
         for (int x = 0; x < new_width; ++x) {
-            int sum_x = 0;
-            int sum_y = 0;
+            float sum_x = 0;
+            float sum_y = 0;
 
             for (int i = 0; i < 3; ++i) {
                 for (int j = 0; j < 3; ++j) {
@@ -26,8 +26,8 @@ void sobelSequential(GrayImage* image) {
             sum_x = std::abs(sum_x);
             sum_y = std::abs(sum_y);
 
-            int magnitude = std::sqrt(sum_x * sum_x + sum_y * sum_y);
-            new_image[y][x] = (uint8_t)std::min(255, magnitude);
+            float magnitude = std::sqrt(sum_x * sum_x + sum_y * sum_y);
+            new_image[y][x] = std::min(255.0f, magnitude);
         }
     }
 
