@@ -18,4 +18,7 @@ struct GrayImage {
 // require user to free memory
 std::vector<GrayImage*> getInputImages(const std::string& directory, bool verbose);
 
+// require user to free memory
+std::vector<GrayImage*> getBSDS500Images(bool verbose);
+
 #endif
