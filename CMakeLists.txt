@@ -23,6 +23,11 @@ add_executable(canny_seq
     src/canny/canny_seq.cpp
 )
 
+add_executable(canny_mpi
+    src/gray_image.cpp
+    src/canny/canny_mpi.cpp
+)
+
 target_link_libraries(main
     PRIVATE opencv_core
     PRIVATE opencv_highgui
@@ -46,4 +51,11 @@ target_link_libraries(canny_seq
     PRIVATE opencv_core
     PRIVATE opencv_highgui
     PRIVATE opencv_imgproc
+)
+
+target_link_libraries(canny_mpi
+    PRIVATE opencv_core
+    PRIVATE opencv_highgui
+    PRIVATE opencv_imgproc
+    PRIVATE MPI::MPI_CXX
 )

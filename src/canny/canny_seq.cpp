@@ -7,7 +7,7 @@ struct CannyInfo {
 
 void gaussianFilter(CannyInfo* canny) {
     // generate gaussian kernel
-    float sum = 0.0;
+    float sum = 0.0f;
     float** gaussian_kernel = new float*[gaussian_kernel_size];
     int gaussian_kernel_radius = gaussian_kernel_size / 2;
 
@@ -74,8 +74,8 @@ void computeGradients(CannyInfo* canny) {
         new_image[y] = new float[new_width];
         canny->direction[y] = new float[new_width];
         for (int x = 0; x < new_width; ++x) {
-            float sum_x = 0;
-            float sum_y = 0;
+            float sum_x = 0.0f;
+            float sum_y = 0.0f;
 
             for (int i = 0; i < 3; ++i) {
                 for (int j = 0; j < 3; ++j) {
@@ -123,7 +123,7 @@ void nonMaxSuppression(CannyInfo* canny) {
                 second_pixel = image->image[y][x+1];
             } else if ((direction >= 22.5f && direction < 67.5f) ||
                         (direction >= -157.5f && direction < -112.5f)) {
-                 // fall in 45 degree direction area
+                // fall in 45 degree direction area
                 first_pixel = image->image[y-1][x-1];
                 second_pixel = image->image[y+1][x+1];
             } else if ((direction >= 67.5f && direction < 112.5f) ||
