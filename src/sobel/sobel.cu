@@ -5,6 +5,18 @@
 
 namespace chrono = std::chrono;
 
+__constant__ int s_kernel_x[3][3] = {
+    {-1, 0, 1},
+    {-2, 0, 2},
+    {-1, 0, 1}
+};
+
+__constant__ int s_kernel_y[3][3] = {
+    {-1, -2, -1},
+    {0, 0, 0},
+    {1, 2, 1}
+};
+
 __global__ void sobelKernel(float* input, float* output, int width, int height) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -18,8 +30,8 @@ __global__ void sobelKernel(float* input, float* output, int width, int height) 
 
     for (int i = -1; i <= 1; ++i) {
         for (int j = -1; j <= 1; ++j) {
-            sum_x += kernel_x[i + 1][j + 1] * input[(y + i) * width + (x + j)];
-            sum_y += kernel_y[i + 1][j + 1] * input[(y + i) * width + (x + j)];
+            sum_x += s_kernel_x[i + 1][j + 1] * input[(y + i) * width + (x + j)];
+            sum_y += s_kernel_y[i + 1][j + 1] * input[(y + i) * width + (x + j)];
         }
     }
 
