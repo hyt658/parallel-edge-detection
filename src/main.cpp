@@ -25,4 +25,8 @@ int main(int argc, char* argv[]) {
 
     executeCMD("./sobel_seq", verbose);
     executeCMD("mpirun -np 6 ./sobel_mpi", verbose);
+
+    executeCMD("./canny_seq", verbose);
+    executeCMD("./canny_omp", verbose);
+    executeCMD("mpirun -np 6 ./canny_mpi", verbose);
 }

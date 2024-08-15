@@ -21,15 +21,10 @@ const int sobel_y[3][3] = {
 
 const int sobel_kernel_size = 3;
 const int gaussian_kernel_size = 5;
-const int gaussian_kernel_radius = 2;
 const double gaussian_sd = 1.0;
+
 const float low_threshold = 50.0f;
 const float high_threshold = 100.0f;
-
-struct CannyInfo {
-    GrayImage* image;
-    float** direction;
-};
 
 inline int getOutputHeight(int image_height, int kernel_size) {
     return image_height - kernel_size + 1;

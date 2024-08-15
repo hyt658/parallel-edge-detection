@@ -1,3 +1,4 @@
+#include <omp.h>
 #include "canny.h"
 
 struct CannyInfo {
@@ -11,6 +12,7 @@ void gaussianFilter(CannyInfo* canny) {
     float** gaussian_kernel = new float*[gaussian_kernel_size];
     int gaussian_kernel_radius = gaussian_kernel_size / 2;
 
+    #pragma omp parallel for reduction(+:sum)
     for (int y = -gaussian_kernel_radius; y <= gaussian_kernel_radius; ++y) {
         int y_idx = y + gaussian_kernel_radius;
         gaussian_kernel[y_idx] = new float[gaussian_kernel_size];
@@ -24,6 +26,7 @@ void gaussianFilter(CannyInfo* canny) {
     }
 
     // normalize gaussian kernel
+    #pragma omp parallel for collapse(2)
     for (int i = 0; i < gaussian_kernel_size; ++i) {
         for (int j = 0; j < gaussian_kernel_size; ++j) {
             gaussian_kernel[i][j] /= sum;
@@ -38,6 +41,7 @@ void gaussianFilter(CannyInfo* canny) {
     int new_width = getOutputWidth(width, gaussian_kernel_size);
     float** new_image = new float*[new_height];
 
+    #pragma omp parallel for
     for (int y = 0; y < new_height; ++y) {
         new_image[y] = new float[new_width];
         for (int x = 0; x < new_width; ++x) {
@@ -70,9 +74,12 @@ void computeGradients(CannyInfo* canny) {
     float** new_image = new float*[new_height];
     canny->direction = new float*[new_height];
 
+    #pragma omp parallel for
     for (int y = 0; y < new_height; ++y) {
         new_image[y] = new float[new_width];
         canny->direction[y] = new float[new_width];
+        
+        #pragma omp parallel for
         for (int x = 0; x < new_width; ++x) {
             float sum_x = 0.0f;
             float sum_y = 0.0f;
@@ -104,12 +111,14 @@ void nonMaxSuppression(CannyInfo* canny) {
     int height = image->height;
     int width = image->width;
     float** new_image = new float*[height];
-    
+
+    #pragma omp parallel for
     for (int y = 1; y < height-1; ++y) {
         new_image[y] = new float[width];
         new_image[y][0] = image->image[y][0];
         new_image[y][width-1] = image->image[y][width - 1];
 
+        #pragma omp parallel for
         for (int x = 1; x < width-1; ++x) {
             float direction = canny->direction[y][x];
             float magnitude = image->image[y][x];
@@ -165,8 +174,11 @@ void doubleThreshold(CannyInfo* canny, float low_threshold, float high_threshold
     int width = image->width;
     float** new_image = new float*[height];
 
+    #pragma omp parallel for
     for (int y = 0; y < height; ++y) {
         new_image[y] = new float[width];
+        
+        #pragma omp parallel for
         for (int x = 0; x < width; ++x) {
             if (image->image[y][x] >= high_threshold) {
                 // strong edge
@@ -224,20 +236,22 @@ int main(int argc, char** argv) {
         }
     }
 
-    std::cout << "==========Sequential Canny==========" << std::endl;
+    std::cout << "==========OpenMP Canny==========" << std::endl;
     std::cout << "Loading images..." << std::endl;
     std::vector<GrayImage*> images = getBSDS500Images(verbose);
 
     std::cout << "Start processing images..." << std::endl;
     auto start = chrono::high_resolution_clock::now();
-    for (auto& image : images) {
+    #pragma omp parallel for
+    for (int i = 0; i < images.size(); ++i) {
+        auto image = images[i];
         if (verbose) {
             std::cout << "Processing image ["
                 << image->file_name << "]..." << std::endl;
         }
         sobelSequential(image);
 
-        image->saveImage("../canny_outputs/sequential");
+        image->saveImage("../canny_outputs/openmp");
         if (verbose) {
             std::cout << "Saved output of image [" 
                 << image->file_name << "] successfully" << std::endl;
