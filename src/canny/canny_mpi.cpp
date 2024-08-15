@@ -156,7 +156,7 @@ void nonMaxSuppression(CannyInfo* canny) {
     canny->local_image = new_image;
 }
 
-void doubleThreshold(CannyInfo* canny, float low_threshold, float high_threshold) {
+void doubleThreshold(CannyInfo* canny) {
     float* image = canny->global_image;
     int start_y = canny->start_y;
     int end_y = canny->end_y;
@@ -208,8 +208,8 @@ void cannyMPI(GrayImage* image, int rank, int size) {
     int width = image->width;
     float* global_image = new float[height * width];
     for (int i = 0; i < height; ++i) {
-        float* pos = global_image + i * width;
-        memcpy(pos, image->image[i], width * sizeof(float));
+        float* dest_pos = global_image + i * width;
+        memcpy(dest_pos, image->image[i], width * sizeof(float));
     }
 
     // first do gaussian filter
@@ -287,7 +287,7 @@ void cannyMPI(GrayImage* image, int rank, int size) {
     canny.global_image = global_image;
 
     // finally do double threshold. Size didn't change
-    doubleThreshold(&canny, low_threshold, high_threshold);
+    doubleThreshold(&canny);
     delete[] global_image;
     global_image = new float[height * width];
     MPI_Allgatherv(canny.local_image, recv_counts[rank], MPI_FLOAT, 
