@@ -168,7 +168,7 @@ void nonMaxSuppression(CannyInfo* canny) {
     image->image = new_image;
 }
 
-void doubleThreshold(CannyInfo* canny, float low_threshold, float high_threshold) {
+void doubleThreshold(CannyInfo* canny) {
     GrayImage* image = canny->image;
     int height = image->height;
     int width = image->width;
@@ -218,12 +218,12 @@ void doubleThreshold(CannyInfo* canny, float low_threshold, float high_threshold
     image->image = new_image;
 }
 
-void sobelSequential(GrayImage* image) {
+void cannyOpenMP(GrayImage* image) {
     CannyInfo canny = {image, nullptr};
     gaussianFilter(&canny);
     computeGradients(&canny);
     nonMaxSuppression(&canny);
-    doubleThreshold(&canny, low_threshold, high_threshold);
+    doubleThreshold(&canny);
     delete[] canny.direction;
 }
 
@@ -249,7 +249,7 @@ int main(int argc, char** argv) {
             std::cout << "Processing image ["
                 << image->file_name << "]..." << std::endl;
         }
-        sobelSequential(image);
+        cannyOpenMP(image);
 
         image->saveImage("../canny_outputs/openmp");
         if (verbose) {
