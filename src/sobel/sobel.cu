@@ -5,13 +5,13 @@
 
 namespace chrono = std::chrono;
 
-__constant__ int s_kernel_x[3][3] = {
+__constant__ int d_kernel_x[3][3] = {
     {-1, 0, 1},
     {-2, 0, 2},
     {-1, 0, 1}
 };
 
-__constant__ int s_kernel_y[3][3] = {
+__constant__ int d_kernel_y[3][3] = {
     {-1, -2, -1},
     {0, 0, 0},
     {1, 2, 1}
@@ -30,8 +30,8 @@ __global__ void sobelKernel(float* input, float* output, int width, int height) 
 
     for (int i = -1; i <= 1; ++i) {
         for (int j = -1; j <= 1; ++j) {
-            sum_x += s_kernel_x[i + 1][j + 1] * input[(y + i) * width + (x + j)];
-            sum_y += s_kernel_y[i + 1][j + 1] * input[(y + i) * width + (x + j)];
+            sum_x += d_kernel_x[i + 1][j + 1] * input[(y + i) * width + (x + j)];
+            sum_y += d_kernel_y[i + 1][j + 1] * input[(y + i) * width + (x + j)];
         }
     }
 
@@ -47,17 +47,44 @@ void sobelCUDA(GrayImage* image) {
     float* d_input;
     float* d_output;
 
-    cudaMalloc(&d_input, size);
-    cudaMalloc(&d_output, size);
+    // Error checking for cudaMalloc
+    if (cudaMalloc(&d_input, size) != cudaSuccess) {
+        std::cerr << "Failed to allocate device memory for input." << std::endl;
+        return;
+    }
+    if (cudaMalloc(&d_output, size) != cudaSuccess) {
+        std::cerr << "Failed to allocate device memory for output." << std::endl;
+        cudaFree(d_input);
+        return;
+    }
 
-    cudaMemcpy(d_input, image->image, size, cudaMemcpyHostToDevice);
+    // Error checking for cudaMemcpy
+    if (cudaMemcpy(d_input, image->image, size, cudaMemcpyHostToDevice) != cudaSuccess) {
+        std::cerr << "Failed to copy data to device memory." << std::endl;
+        cudaFree(d_input);
+        cudaFree(d_output);
+        return;
+    }
 
     dim3 blockSize(16, 16);
     dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y);
 
+    // Launch kernel
     sobelKernel<<<gridSize, blockSize>>>(d_input, d_output, width, height);
 
-    cudaMemcpy(image->image, d_output, size, cudaMemcpyDeviceToHost);
+    // Error checking for kernel launch
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        std::cerr << "Kernel launch failed: " << cudaGetErrorString(err) << std::endl;
+        cudaFree(d_input);
+        cudaFree(d_output);
+        return;
+    }
+
+    // Error checking for cudaMemcpy
+    if (cudaMemcpy(image->image, d_output, size, cudaMemcpyDeviceToHost) != cudaSuccess) {
+        std::cerr << "Failed to copy data from device memory." << std::endl;
+    }
 
     cudaFree(d_input);
     cudaFree(d_output);
@@ -75,7 +102,7 @@ int main(int argc, char** argv) {
     std::cout << "========== CUDA Sobel ==========" << std::endl;
     std::cout << "Loading images..." << std::endl;
 
-    std::string image_path = "../inputs_BSDS500/BSDS500/data/images/";
+    std::string image_path = "../../inputs_BSDS500/BSDS500/data/images/";
     auto test = getInputImages(image_path + "test", verbose);
     auto train = getInputImages(image_path + "train", verbose);
     auto val = getInputImages(image_path + "val", verbose);
@@ -109,3 +136,4 @@ int main(int argc, char** argv) {
 
     return 0;
 }
+
