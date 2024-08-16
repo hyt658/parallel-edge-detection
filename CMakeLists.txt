@@ -21,6 +21,17 @@ target_link_libraries(sobel_seq
     PRIVATE opencv_imgproc
 )
 
+add_executable(sobel_omp
+    src/gray_image.cpp
+    src/sobel/sobel_openmp.cpp
+)
+target_link_libraries(sobel_omp
+    PRIVATE opencv_core
+    PRIVATE opencv_highgui
+    PRIVATE opencv_imgproc
+    PRIVATE OpenMP::OpenMP_CXX
+)
+
 add_executable(sobel_mpi
     src/gray_image.cpp
     src/sobel/sobel_mpi.cpp
