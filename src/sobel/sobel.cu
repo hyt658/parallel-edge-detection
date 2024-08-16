@@ -69,6 +69,8 @@ void sobelCUDA(GrayImage* image) {
     dim3 blockSize(16, 16);
     dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y);
 
+    std::cout << "width: " << image->width << ", height: " << image->height << std::endl;
+
     // Launch kernel
     sobelKernel<<<gridSize, blockSize>>>(d_input, d_output, width, height);
 
@@ -88,6 +90,10 @@ void sobelCUDA(GrayImage* image) {
 
     cudaFree(d_input);
     cudaFree(d_output);
+
+    image->width = width - 2;
+    image->height = height - 2;
+    std::cout << "width: " << image->width << ", height: " << image->height << std::endl;
 }
 
 int main(int argc, char** argv) {
@@ -102,15 +108,7 @@ int main(int argc, char** argv) {
     std::cout << "========== CUDA Sobel ==========" << std::endl;
     std::cout << "Loading images..." << std::endl;
 
-    std::string image_path = "../../inputs_BSDS500/BSDS500/data/images/";
-    auto test = getInputImages(image_path + "test", verbose);
-    auto train = getInputImages(image_path + "train", verbose);
-    auto val = getInputImages(image_path + "val", verbose);
-
-    std::vector<GrayImage*> images;
-    images.insert(images.end(), test.begin(), test.end());
-    images.insert(images.end(), train.begin(), train.end());
-    images.insert(images.end(), val.begin(), val.end());
+    std::vector<GrayImage*> images = getBSDS500Images(verbose);
 
     std::cout << "Start processing images..." << std::endl;
 

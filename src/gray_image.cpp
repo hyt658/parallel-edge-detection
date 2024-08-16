@@ -45,9 +45,14 @@ void GrayImage::saveImage(std::string output_dir) {
         fs::create_directories(output_dir);
     }
 
+    std::cout << "width: " << width << ", height: " << height << std::endl;
+
     cv::Mat gray_image(height, width, CV_8UC1);
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
+	    std::cout << "x: " << x << ", y: " << y << std::endl;
+	    std::cout << image[0][0] << std::endl;
+	    std::cout << "gray_image.at(0,0):" << gray_image.at<uint8_t>(0,0)  << std::endl;
             gray_image.at<uint8_t>(y, x) = (uint8_t)image[y][x];
         }
     }
@@ -90,7 +95,7 @@ std::vector<GrayImage*> getInputImages(const std::string& directory, bool verbos
 }
 
 std::vector<GrayImage*> getBSDS500Images(bool verbose) {
-    std::string image_path = "../inputs_BSDS500/BSDS500/data/images/";
+    std::string image_path = "../../inputs_BSDS500/BSDS500/data/images/";
     auto test = getInputImages(image_path + "test", verbose);
     auto train = getInputImages(image_path + "train", verbose);
     auto val = getInputImages(image_path + "val", verbose);
