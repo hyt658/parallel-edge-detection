@@ -32,6 +32,16 @@ target_link_libraries(sobel_mpi
     PRIVATE MPI::MPI_CXX
 )
 
+add_executable(sobel_cuda
+    src/gray_image.cpp
+    src/sobel/sobel.cu
+)
+target_link_libraries(sobel_cuda
+    PRIVATE opencv_core
+    PRIVATE opencv_highgui
+    PRIVATE opencv_imgproc
+)
+
 add_executable(canny_seq
     src/gray_image.cpp
     src/canny/canny_seq.cpp

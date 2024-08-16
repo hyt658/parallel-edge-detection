@@ -36,30 +36,37 @@ __global__ void sobelKernel(float* input, float* output, int width, int height) 
     }
 
     float magnitude = sqrtf(sum_x * sum_x + sum_y * sum_y);
-    output[y * width + x] = fminf(255.0f, magnitude);
+    output[(y-1) * width + (x-1)] = fminf(255.0f, magnitude);
 }
 
 void sobelCUDA(GrayImage* image) {
     int width = image->width;
     int height = image->height;
     int size = width * height * sizeof(float);
+    int new_size = (width-2) * (height-2) * sizeof(float);
 
     float* d_input;
     float* d_output;
+    float* input = new float[size];
+    float* result = new float[new_size];
+
+    for(int i = 0; i < height; i++) {
+	memcpy(input+i*width, image->image[i], width*sizeof(float));
+    }
 
     // Error checking for cudaMalloc
     if (cudaMalloc(&d_input, size) != cudaSuccess) {
         std::cerr << "Failed to allocate device memory for input." << std::endl;
         return;
     }
-    if (cudaMalloc(&d_output, size) != cudaSuccess) {
+    if (cudaMalloc(&d_output, new_size) != cudaSuccess) {
         std::cerr << "Failed to allocate device memory for output." << std::endl;
         cudaFree(d_input);
         return;
     }
 
     // Error checking for cudaMemcpy
-    if (cudaMemcpy(d_input, image->image, size, cudaMemcpyHostToDevice) != cudaSuccess) {
+    if (cudaMemcpy(d_input, input, size, cudaMemcpyHostToDevice) != cudaSuccess) {
         std::cerr << "Failed to copy data to device memory." << std::endl;
         cudaFree(d_input);
         cudaFree(d_output);
@@ -68,8 +75,6 @@ void sobelCUDA(GrayImage* image) {
 
     dim3 blockSize(16, 16);
     dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y);
-
-    std::cout << "width: " << image->width << ", height: " << image->height << std::endl;
 
     // Launch kernel
     sobelKernel<<<gridSize, blockSize>>>(d_input, d_output, width, height);
@@ -84,8 +89,13 @@ void sobelCUDA(GrayImage* image) {
     }
 
     // Error checking for cudaMemcpy
-    if (cudaMemcpy(image->image, d_output, size, cudaMemcpyDeviceToHost) != cudaSuccess) {
+    if (cudaMemcpy(result, d_output, new_size, cudaMemcpyDeviceToHost) != cudaSuccess) {
         std::cerr << "Failed to copy data from device memory." << std::endl;
+    }
+    int new_height = height - 2;
+    int new_width = width - 2;
+    for(int i = 0; i < new_height; i++) {
+	memcpy(image->image[i], result+i*new_width, new_width*sizeof(float));
     }
 
     cudaFree(d_input);
@@ -93,7 +103,6 @@ void sobelCUDA(GrayImage* image) {
 
     image->width = width - 2;
     image->height = height - 2;
-    std::cout << "width: " << image->width << ", height: " << image->height << std::endl;
 }
 
 int main(int argc, char** argv) {
