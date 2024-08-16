@@ -20,23 +20,25 @@ __constant__ int d_kernel_y[3][3] = {
 __global__ void sobelKernel(float* input, float* output, int width, int height) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
+    int new_width = width - 2;
+    int new_height = height - 2;
 
-    if (x < 1 || x >= width - 1 || y < 1 || y >= height - 1) {
+    if (x < 1 || x > new_width || y < 1 || y > new_height) {
         return;
     }
 
     float sum_x = 0;
     float sum_y = 0;
 
-    for (int i = -1; i <= 1; ++i) {
-        for (int j = -1; j <= 1; ++j) {
-            sum_x += d_kernel_x[i + 1][j + 1] * input[(y + i) * width + (x + j)];
-            sum_y += d_kernel_y[i + 1][j + 1] * input[(y + i) * width + (x + j)];
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            sum_x += d_kernel_x[i][j] * input[(y + i - 1) * width + (x + j - 1)];
+            sum_y += d_kernel_y[i][j] * input[(y + i - 1) * width + (x + j - 1)];
         }
     }
 
     float magnitude = sqrtf(sum_x * sum_x + sum_y * sum_y);
-    output[(y-1) * width + (x-1)] = fminf(255.0f, magnitude);
+    output[(y - 1) * new_width + (x - 1)] = fminf(255.0f, magnitude);
 }
 
 void sobelCUDA(GrayImage* image) {
