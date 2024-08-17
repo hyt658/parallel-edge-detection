@@ -23,7 +23,7 @@ target_link_libraries(sobel_seq
 
 add_executable(sobel_omp
     src/gray_image.cpp
-    src/sobel/sobel_openmp.cpp
+    src/sobel/sobel_omp.cpp
 )
 target_link_libraries(sobel_omp
     PRIVATE opencv_core
@@ -45,7 +45,7 @@ target_link_libraries(sobel_mpi
 
 add_executable(sobel_cuda
     src/gray_image.cpp
-    src/sobel/sobel.cu
+    src/sobel/sobel_cuda.cu
 )
 target_link_libraries(sobel_cuda
     PRIVATE opencv_core
