@@ -23,6 +23,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    for(int i = 0; i < 10; i++) {
     executeCMD("./sobel_seq", verbose);
     executeCMD("./sobel_omp", verbose);
     executeCMD("mpirun -np 6 ./sobel_mpi", verbose);
@@ -32,4 +33,5 @@ int main(int argc, char* argv[]) {
     executeCMD("./canny_omp", verbose);
     executeCMD("mpirun -np 6 ./canny_mpi", verbose);
     executeCMD("./canny_cuda", verbose);
+    }
 }

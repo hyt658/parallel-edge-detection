@@ -41,7 +41,7 @@ __global__ void sobelKernel(float* input, float* output, int width, int height) 
     output[(y - 1) * new_width + (x - 1)] = fminf(255.0f, magnitude);
 }
 
-void sobelCUDA(GrayImage* image) {
+void sobelCUDA(GrayImage* image, auto* core_dur) {
     int width = image->width;
     int height = image->height;
     int size = width * height * sizeof(float);
@@ -79,7 +79,13 @@ void sobelCUDA(GrayImage* image) {
     dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y);
 
     // Launch kernel
+    auto start1 = chrono::high_resolution_clock::now();
     sobelKernel<<<gridSize, blockSize>>>(d_input, d_output, width, height);
+    auto end1 = chrono::high_resolution_clock::now();
+    auto core_duration = chrono::duration_cast<chrono::nanoseconds>(end1 - start1);
+    *core_dur += core_duration;
+    std::cout << "Core time: " << core_duration.count() << " ns" << std::endl;
+
 
     // Error checking for kernel launch
     cudaError_t err = cudaGetLastError();
@@ -123,13 +129,14 @@ int main(int argc, char** argv) {
 
     std::cout << "Start processing images..." << std::endl;
 
+    auto core_dur = 0;
     auto start = chrono::high_resolution_clock::now();
     for (auto& image : images) {
         if (verbose) {
             std::cout << "Processing image ["
                 << image->file_name << "]..." << std::endl;
         }
-        sobelCUDA(image);
+        sobelCUDA(image, &core_dur);
 
         image->saveImage("../sobel_outputs/cuda");
         if (verbose) {
